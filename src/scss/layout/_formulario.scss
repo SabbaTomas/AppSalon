@@ -19,3 +19,15 @@
     }
     
 }
+
+.alerta {
+    padding: $separacion / 2;
+    text-align: center;
+    color: $blanco;
+    width: 100%;
+    display: block;
+
+    &.error {
+        background-color: rgb(184, 0, 0);
+    }
+}

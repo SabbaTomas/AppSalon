@@ -29,6 +29,18 @@ function iniciarApp () {
 
     //Muestra el resumen de la cita o mensaje de error
     mostrarResumen();
+
+    // Almacena el nombre de la cita
+    nombreCita();
+
+    //Almacena la fecha
+    fechaCita();
+
+    // deshabilita dias pasados
+    deshabilitarFechaAnterior();
+
+    //Almacena la hora de la cita
+    horaCita();
 }
 
 function mostrarSeccion() {
@@ -47,7 +59,6 @@ function mostrarSeccion() {
         tabAnterior.classList.remove('actual');
     }
 
-    
 
     // Resaltar tab actual
     const tab = document.querySelector(`[data-paso="${pagina}"]`);
@@ -187,6 +198,8 @@ function botonesPaginador () {
     } else if (pagina === 3) {
         paginaSiguiente.classList.add('ocultar');
         paginaAnterior.classList.remove('ocultar');
+
+        mostrarResumen(); //estamos en pag 3, entonces carga la cita
     } else {
         paginaAnterior.classList.remove('ocultar');
         paginaSiguiente.classList.remove('ocultar');    
@@ -202,6 +215,11 @@ function mostrarResumen() {
     // Seleccionar el resumen
     const resumenDiv = document.querySelector('.contenido-resumen');
 
+    // Limpia html 
+    while( resumenDiv.firstChild ) {
+        resumenDiv.removeChild(resumenDiv.firstChild);
+    }
+
     // Validacion de objeto
     if(Object.values(cita).includes('')) {
     const noServicios = document.createElement('P');
@@ -211,6 +229,160 @@ function mostrarResumen() {
 
     //agregar el resumen Div
     resumenDiv.appendChild(noServicios);
+    return;
+    }  
 
-    }   
+    const headingCita = document.createElement('H3');
+    headingCita.textContent = 'Resumen de Cita';
+
+    // mostrar el resumen
+    const nombreCita = document.createElement('P');
+    nombreCita.innerHTML = `<span>Nombre: </span>${nombre}`;
+    const fechaCita = document.createElement('P');
+    fechaCita.innerHTML = `<span>Fecha: </span>${fecha}`;
+    const horaCita = document.createElement('P');
+    horaCita.innerHTML = `<span>Hora: </span>${hora}`;
+
+    const serviciosCita = document.createElement('DIV');
+    serviciosCita.classList.add('resumen-servicios');
+
+    const headingServicios = document.createElement('H3');
+    headingServicios.textContent = 'Resumen de Servicios';
+
+    serviciosCita.appendChild(headingServicios);
+
+    let cantidad = 0;
+
+    //Iterar sobre el arreglo de servicios
+    servicios.forEach( servicio => {
+
+        const {nombre, precio} = servicio;
+        const contenedorServicio = document.createElement('DIV');
+        contenedorServicio.classList.add('contenedor-servicio');
+
+        const textoServicio = document.createElement('P');
+        textoServicio.textContent = nombre;
+        
+        const precioServicio = document.createElement('P');
+        precioServicio.textContent = precio;
+        precioServicio.classList.add('precio');
+
+        const totalServicio = precio.split('$');
+
+        cantidad += parseInt( totalServicio[1].trim());
+
+        // Colocar texto y precio 
+        contenedorServicio.appendChild(textoServicio);
+        contenedorServicio.appendChild(precioServicio);
+
+        serviciosCita.appendChild(contenedorServicio);
+    } );
+
+    resumenDiv.appendChild(headingCita);
+    resumenDiv.appendChild(nombreCita);
+    resumenDiv.appendChild(fechaCita);
+    resumenDiv.appendChild(horaCita);
+
+    resumenDiv.appendChild(serviciosCita);
+
+    const cantidadPagar = document.createElement('P');
+    cantidadPagar.classList.add('total');
+    cantidadPagar.innerHTML = `<span>Total a Pagar: </span>$ ${cantidad}`;
+
+    resumenDiv.appendChild(cantidadPagar);
+}
+
+function nombreCita() {
+    const nombreinput = document.querySelector('#nombre');
+
+    nombreinput.addEventListener('input', e => {
+        const nombreTexto = e.target.value.trim();
+        
+        // validar texto
+        if (nombreTexto === '' || nombreTexto.length < 3) {
+            mostrarAlerta('Nombre no valido', 'error');
+        } else {
+            const alerta = document.querySelector('.alerta');
+            if(alerta) {
+                alerta.remove();
+            }
+            cita.nombre = nombreTexto;
+
+        }
+    });
+}
+
+function mostrarAlerta (mensaje, tipo) {
+    // si hay una alerta no crear otra
+    const alertaPrevia = document.querySelector('.alerta');
+    if(alertaPrevia) {
+        return;
+    }
+
+    const alerta = document.createElement('DIV');
+    alerta.textContent = mensaje;
+    alerta.classList.add('alerta');
+
+    if(tipo === 'error') {
+        alerta.classList.add('error');
+    }
+    // Agregar HTML
+    const formulario = document.querySelector('.formulario');
+    formulario.appendChild(alerta);
+
+    //eliminar la alerta despues de 3 seg
+    setTimeout(() => {
+        alerta.remove();
+    }, 3000);
+}
+
+function fechaCita() {
+    const fechaInput = document.querySelector('#fecha');
+    fechaInput.addEventListener('input', e => {
+
+        const dia = new Date(e.target.value).getUTCDay();
+
+        if([0, 6].includes(dia)) {
+            e.preventDefault();
+            fechaInput.value = '';
+            mostrarAlerta('Fines de semana no son permitidios', 'error');
+        } else {
+            cita.fecha = fechaInput.value;
+
+            console.log(cita);
+        }
+    });
+}
+
+function deshabilitarFechaAnterior() {
+    const inputFecha = document.querySelector('#fecha');
+
+    const fechaAhora = new Date();
+    const year = fechaAhora.getFullYear();
+    const mes = fechaAhora.getMonth() + 1;
+    const dia = fechaAhora.getDate() + 1;
+    const fechaDeshabilitar = `${year}-${mes}-${dia}`;
+
+    inputFecha.min = fechaDeshabilitar;
+}
+
+function horaCita() {
+    const inputHora = document.querySelector('#hora');
+    inputHora.addEventListener('input', e => {
+        console.log(e.target.value);
+
+        const horaCita = e.target.value;
+        const hora = horaCita.split(':');
+
+        if(hora[0] < 10 || hora[0] > 18 ) {
+            mostrarAlerta('Hora no valida', 'error');
+            setTimeout(() => {
+                inputHora.value = '';
+            }, 3000);
+        } else {
+            cita.hora = horaCita;
+
+            console.log(cita);
+        }
+    });
 }
