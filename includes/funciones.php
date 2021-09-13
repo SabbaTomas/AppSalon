@@ -1,6 +1,6 @@
 <?php
 
-function obtenerServicios() {
+function obtenerServicios() : array {
     try {
         // importar uina conexion
         require 'databases.php';
@@ -24,9 +24,11 @@ function obtenerServicios() {
             $i++;
         }
 
-        echo "<pre>";
-            var_dump( json_encode($servicios) );
-            echo "</pre>";
+        //echo "<pre>";
+        //    var_dump($servicios) ;
+        //    echo "</pre>";
+
+        return $servicios;
 
     } catch (\Throwable $th) {
 

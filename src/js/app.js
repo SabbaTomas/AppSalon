@@ -83,7 +83,7 @@ function cambiarSeccion() {
 
 async function mostrarServicios() {
     try {
-        const url = 'http://localhost/AppSalon_inicio/servicios.php'
+        const url = 'http://localhost/AppSalon_inicio/servicios.php';
 
         const resultado = await fetch(url);
         const db = await resultado.json();
