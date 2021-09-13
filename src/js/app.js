@@ -83,13 +83,15 @@ function cambiarSeccion() {
 
 async function mostrarServicios() {
     try {
-        const resultado = await fetch('./servicios.json');
+        const url = 'http://localhost/AppSalon_inicio/servicios.php'
+
+        const resultado = await fetch(url);
         const db = await resultado.json();
 
         const { servicios } = db;
 
         //Generar HTML
-        servicios.forEach( servicio => {
+        db.forEach( servicio => {
             const { id, nombre, precio } = servicio;
 
             // DOM scripting
